@@ -5,6 +5,7 @@
 //! not of the architecture. On when the question is "where does this land".
 
 import { MOTION } from "./Tokens";
+import { press } from "./Animation";
 
 export function ExternalsToggle({
 	value,
@@ -18,7 +19,10 @@ export function ExternalsToggle({
 			type="button"
 			role="switch"
 			aria-checked={value}
-			onClick={() => onChange(!value)}
+			onClick={e => {
+				press(e.currentTarget.querySelector("span"));
+				onChange(!value);
+			}}
 			className="group flex items-center gap-2.5 rounded-lg px-1 py-1 text-left"
 		>
 			<span

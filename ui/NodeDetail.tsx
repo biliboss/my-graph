@@ -10,6 +10,7 @@ import { Section, Stack } from "./Spacing";
 import { SPACE } from "./Tokens";
 import type { Graph } from "@/lib/extract";
 import { isExternal, neighbours, nodeById } from "@/lib/viewer-state";
+import { Pressable } from "./Pressable";
 
 export function NodeDetail({
 	graph,
@@ -101,15 +102,11 @@ const Links = ({
 	ids.length ? (
 		<div className="flex flex-wrap gap-1">
 			{ids.map(id => (
-				<Chip
-					key={`${label}-${id}`}
-					size="sm"
-					variant={muted ? "tertiary" : "soft"}
-					className="cursor-pointer"
-					onClick={() => onOpen(id)}
-				>
-					{label ? `${label} ${id}` : id}
-				</Chip>
+				<Pressable key={`${label}-${id}`} onClick={() => onOpen(id)}>
+					<Chip size="sm" variant={muted ? "tertiary" : "soft"} className="cursor-pointer">
+						{label ? `${label} ${id}` : id}
+					</Chip>
+				</Pressable>
 			))}
 		</div>
 	) : null;

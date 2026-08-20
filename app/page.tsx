@@ -6,7 +6,6 @@
 //! graph — that is the app layer's job, and this file cannot be tempted because it
 //! never imports the extractor.
 
-import { Spinner } from "@heroui/react";
 import { GraphCanvas } from "@/ui/GraphCanvas";
 import { NodeDetail } from "@/ui/NodeDetail";
 import { InterfaceDetail } from "@/ui/InterfaceDetail";
@@ -16,6 +15,8 @@ import { ExternalsToggle } from "@/ui/ExternalsToggle";
 import { useGraph, useViewerState } from "@/ui/useViewer";
 import { toggleOpen } from "@/lib/viewer-state";
 import { densityStyle } from "@/ui/Spacing";
+import { PanelSwap } from "@/ui/PanelSwap";
+import { Loading } from "@/ui/Loading";
 
 export default function Page() {
 	const graph = useGraph();
@@ -24,7 +25,7 @@ export default function Page() {
 	if (!graph) {
 		return (
 			<main className="flex h-screen items-center justify-center">
-				<Spinner />
+				<Loading />
 			</main>
 		);
 	}
@@ -52,22 +53,29 @@ export default function Page() {
 				}}
 				className="flex w-[380px] flex-col overflow-auto border-l border-default-200 bg-content1"
 			>
-				{state.selected.includes("::") ? (
-					<InterfaceDetail
-						graph={graph}
-						id={state.selected}
-						onBack={fileId => update({ ...state, selected: fileId })}
-					/>
-				) : state.selected ? (
-					<NodeDetail
-						graph={graph}
-						id={state.selected}
-						onBack={() => update({ ...state, selected: "" })}
-						onOpen={id => update(toggleOpen(state, id))}
-					/>
-				) : (
-					<OverviewPanel graph={graph} />
-				)}
+				{/* DEPTH, not a boolean: overview is 0, a file is 1, one of its interfaces
+				    is 2 — and the number is what tells the swap which way to slide. */}
+				<PanelSwap
+					id={state.selected}
+					depth={state.selected.includes("::") ? 2 : state.selected ? 1 : 0}
+				>
+					{state.selected.includes("::") ? (
+						<InterfaceDetail
+							graph={graph}
+							id={state.selected}
+							onBack={fileId => update({ ...state, selected: fileId })}
+						/>
+					) : state.selected ? (
+						<NodeDetail
+							graph={graph}
+							id={state.selected}
+							onBack={() => update({ ...state, selected: "" })}
+							onOpen={id => update(toggleOpen(state, id))}
+						/>
+					) : (
+						<OverviewPanel graph={graph} />
+					)}
+				</PanelSwap>
 
 				<div className="mt-auto flex flex-col gap-3 border-t border-default-200 pt-4">
 					<DensityControl

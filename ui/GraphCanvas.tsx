@@ -19,6 +19,7 @@ import cytoscape, { type Core, type NodeSingular } from "cytoscape";
 import cola from "cytoscape-cola";
 import type { Graph } from "@/lib/extract";
 import type { ViewerState } from "@/lib/viewer-state";
+import { pulse } from "./Animation";
 
 let registered = false;
 
@@ -41,6 +42,11 @@ let registered = false;
  *  keeps the compactness cola found, and only the ink moves.
  */
 function routeEdges(cy: Core) {
+	// THE INSTANCE MAY BE GONE. Routing is scheduled from `layoutstop` and from the
+	// selection effect, and cola keeps ticking for seconds — a hot reload in the middle
+	// destroys the core while a tick is still queued, and every read below then hits a
+	// null renderer (`Cannot read properties of null (reading 'isHeadless')`, 20/08).
+	if (cy.destroyed()) return;
 	const nodes = cy.nodes("[!iface]:visible").map(n => ({ id: n.id(), p: n.position(), r: n.width() / 2 }));
 	const CLEAR = 14;   // px of daylight between ink and circle
 	const SAMPLES = 24;
@@ -272,7 +278,14 @@ export function GraphCanvas({
 		// the one thing that is not, and hiding it would mean the graph is the only
 		// part nobody can prove works.
 		(window as unknown as { __cy?: Core }).__cy = instance;
-		return () => { instance.destroy(); cy.current = null; };
+		return () => {
+			// STOP BEFORE DESTROY, in this order: `destroy()` alone leaves cola's running
+			// simulation holding a core whose renderer is already null, and the next tick
+			// throws from inside the library where no guard of ours can reach.
+			instance.stop();
+			instance.destroy();
+			cy.current = null;
+		};
 		// Density and externals rebuild the layout on purpose: both are layout inputs, not
 		// classes on something already placed.
 	}, [graph, state.density, state.externals]);
@@ -280,7 +293,7 @@ export function GraphCanvas({
 	// ── react to selection and open rings ───────────────────────────────────
 	useEffect(() => {
 		const c = cy.current;
-		if (!c) return;
+		if (!c || c.destroyed()) return;
 
 		c.nodes("[?iface]").remove();
 		c.edges("[kind = 'member']").remove();
@@ -313,6 +326,10 @@ export function GraphCanvas({
 			if (node.length) {
 				c.elements().addClass("dim");
 				node.closedNeighborhood().union(c.$(`[parentFile = "${state.selected}"]`)).removeClass("dim");
+				// A PULSE ON WHAT YOU PICKED, before the camera moves. The zoom answers
+				// "where", the pulse answers "which one" — and during a 320ms fit the eye
+				// cannot follow a circle it has not yet identified.
+				pulse(node as unknown as Parameters<typeof pulse>[0]);
 				// Zoom in on selection, out when it clears: a ring of satellites is
 				// unreadable at whole-graph zoom.
 				c.animate({
