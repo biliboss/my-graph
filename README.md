@@ -16,7 +16,7 @@ interface one click away.
 
 ```bash
 bun install
-MY_GRAPH_ROOT=~/src/my/packages/interfaces/src bun run dev -- --port 4173
+MY_GRAPH_ROOT=~/src/my/packages/interfaces bun run dev -- --port 4173
 ```
 
 ## What is actually in the picture
