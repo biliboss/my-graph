@@ -139,7 +139,13 @@ export function depths(g: Graph): Map<string, number> {
  *  Only `import` edges count. A `depends_on` comment is a claim, and a hub built out
  *  of claims would hide real arrows on the strength of a sentence nobody verifies. */
 export function hubs(g: Graph): string[] {
-	const real = g.nodes.filter(n => !isExternal(n.id));
+	// ÓRFÃO NÃO ENTRA NO DENOMINADOR, pela mesma razão que ele não entra em
+	// `drafts` logo abaixo: um hub é um CONTRATO que metade dos outros importa, e
+	// órfão é código sem contrato nenhum. Medido 20/08 — ligar a toggle de órfãos
+	// levava `real` de 9 pra 111, o limiar de 4 pra 55, e `shared` (12 setas)
+	// deixava de ser hub. O sintoma foi a toggle de esconder as setas DESAPARECER
+	// da barra, porque `HubToggle` não se desenha sem um nome pra dizer.
+	const real = g.nodes.filter(n => !isExternal(n.id) && !n.orphan);
 	const threshold = Math.max(2, Math.ceil((real.length - 1) / 2));
 	return real
 		.filter(n => g.edges.filter(e => e.kind === "import" && e.target === n.id).length >= threshold)
