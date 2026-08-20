@@ -196,10 +196,13 @@ export function GraphCanvas({
 				{
 					selector: "node",
 					style: {
+						// A COR DIZ O PAPEL, O PREENCHIMENTO DIZ SE EXISTE. A cor também tentava
+						// dizer "draft", e `tasks` saía roxo com oito arquivos atrás — dois
+						// sinais contando histórias diferentes sobre o mesmo círculo. Vazado
+						// responde "tem código?"; a cor responde "é o quê?".
 						"background-color": (n: NodeSingular) =>
 							n.data("id").startsWith("ext:") ? COLOURS.line
 							: n.data("tool") ? COLOURS.tool
-							: n.data("draft") ? COLOURS.draft
 							: COLOURS.runs,
 						label: "data(label)", "font-size": 12, "font-weight": 700,
 						// Dark ink on the bright fills, light on the grey externals — one
