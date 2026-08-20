@@ -54,7 +54,7 @@ export type Graph = {
 	cycles: string[];
 };
 
-/** WHICH TREE TO DRAW. `MY_GRAPH_ROOT=~/src/me/src/interfaces bun run dev` — a path,
+/** WHICH TREE TO DRAW. `MY_GRAPH_ROOT=~/src/my/packages/interfaces/src bun run dev` — a path,
  *  because a graph tool that only knows the repo it was born in is not a tool, it is
  *  a picture of one codebase with a server attached.
  *
@@ -63,7 +63,11 @@ export type Graph = {
  *  contratos, que é onde eles moram nesta casa (`src/interfaces/` dentro de `src/`). */
 const CODE = process.env.MY_GRAPH_CODE ?? "";
 
-const DIR = process.env.MY_GRAPH_ROOT ?? join(process.cwd(), "..", "me", "src", "interfaces");
+// O DEFAULT MUDOU DUAS VEZES EM 20/08 e a segunda diz por quê: os contratos saíram
+// de `me/src/interfaces` (repositório privado, código dentro da casa) pra
+// `my/packages/interfaces/src` — um pacote de workspace que a família inteira
+// importa por nome. Um default é conveniência; `MY_GRAPH_ROOT` é o contrato.
+const DIR = process.env.MY_GRAPH_ROOT ?? join(process.cwd(), "..", "my", "packages", "interfaces", "src");
 
 export function extract(): Graph {
 	const files = readdirSync(DIR).filter(f => f.endsWith(".ts"));
