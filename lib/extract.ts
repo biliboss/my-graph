@@ -1,10 +1,10 @@
-//! THE APPLICATION LAYER'S ONE JOB: turn `src/*/interface.ts` into a graph.
+//! THE APPLICATION LAYER'S ONE JOB: turn a folder of `<system>.ts` contracts into a graph.
 //!
 //! It knows nothing about React, HeroUI or cytoscape — it reads files and returns
 //! data. That is why it lives here and not in a component: a rule about what an edge
 //! MEANS must never be reachable only by rendering something.
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /** METHOD NAMES, not a count: a circle sized by "how many" says how big something is,
@@ -40,26 +40,23 @@ export type Graph = {
 	cycles: string[];
 };
 
-/** WHICH TREE TO DRAW. `MY_GRAPH_ROOT=~/src/me/src bun run dev` — a path, because a
- *  graph tool that only knows the repo it was born in is not a tool, it is a picture
- *  of one codebase with a server attached.
+/** WHICH TREE TO DRAW. `MY_GRAPH_ROOT=~/src/me/src/interfaces bun run dev` — a path,
+ *  because a graph tool that only knows the repo it was born in is not a tool, it is
+ *  a picture of one codebase with a server attached.
  *
- *  The contract it reads is the same everywhere: `<root>/<system>/interface.ts`, the
- *  system named by its directory. */
-const DIR = process.env.MY_GRAPH_ROOT ?? join(process.cwd(), "..", "me", "src");
+ *  One folder, one file per system, the system named by the file. */
+const DIR = process.env.MY_GRAPH_ROOT ?? join(process.cwd(), "..", "me", "src", "interfaces");
 
 export function extract(): Graph {
-	const files = readdirSync(DIR, { withFileTypes: true })
-		.filter(d => d.isDirectory() && existsSync(join(DIR, d.name, "interface.ts")))
-		.map(d => `${d.name}/interface.ts`);
+	const files = readdirSync(DIR).filter(f => f.endsWith(".ts"));
 	const nodes: GraphNode[] = [];
 	const edges: GraphEdge[] = [];
 	const outside = new Set<string>();
 
-	const names = files.map(f => f.split("/")[0]);
+	const names = files.map(f => f.replace(/\.ts$/, ""));
 
 	for (const file of files) {
-		const id = file.split("/")[0];
+		const id = file.replace(/\.ts$/, "");
 		const src = readFileSync(join(DIR, file), "utf8");
 
 		// Brace-counting, not a TS parse: these files are hand-written and flat, and a
@@ -91,7 +88,7 @@ export function extract(): Graph {
 			tool: /^\/\/! external:/m.test(src),
 		});
 
-		for (const m of src.matchAll(/import type \{[^}]+\} from "\.\.\/([\w.-]+)\/interface"/g)) {
+		for (const m of src.matchAll(/import type \{[^}]+\} from "\.\/([\w.-]+)"/g)) {
 			edges.push({ source: id, target: m[1], kind: "import" });
 		}
 
@@ -100,14 +97,12 @@ export function extract(): Graph {
 			for (const raw of dep[1].split("·")) {
 				const t = raw.trim();
 				if (!t) continue;
-				// `src/resources.ts` and `interfaces/resources.ts` share a basename, and
-				// matching on it drew a SELF-LOOP (20/08). A path with a slash is outside.
-				// `src/kanban/` cites its own neighbours by name; anything else is a path
-				// somewhere out of the picture.
+				// A cited path names a NEIGHBOUR only when it is one: `src/tasks/` from
+				// `kanban.ts` is the tasks system, `src/gh/` is somebody else's code.
 				const name = t.replace(/\/$/, "").replace(/^src\//, "").split("/")[0];
-				// SINCE THE MOVE, a citation of its own directory is the file citing itself —
-				// `shared/interface.ts` naming `src/shared/` is where it now lives, not a
-				// dependency. Drawing it put a loop on every node.
+				// `agents.ts` citing `src/agents/list.ts` is the file pointing at its own
+				// implementation, not at a dependency — drawing it put a loop on every node
+				// that documents running code (20/08).
 				if (name === id) continue;
 				const target = names.includes(name)
 					? name

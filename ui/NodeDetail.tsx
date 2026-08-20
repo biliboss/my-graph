@@ -33,7 +33,7 @@ export function NodeDetail({
 
 	return (
 		<Stack gap="group">
-			<Button size="sm" variant="light" className="w-fit px-0" onClick={onBack}>
+			<Button size="sm" variant="ghost" className="w-fit px-0" onClick={onBack}>
 				← visão geral
 			</Button>
 
@@ -59,7 +59,7 @@ export function NodeDetail({
 						{node.exports.map(f => (
 							<li key={f.name} className="text-sm text-default-500">
 								<code>{f.name}</code>
-								{f.methods > 0 && <span className="text-default-400"> · {f.methods} verbos</span>}
+								{f.methods.length > 0 && <span className="text-default-400"> · {f.methods.length} verbos</span>}
 							</li>
 						))}
 					</ul>
@@ -104,7 +104,7 @@ const Links = ({
 				<Chip
 					key={`${label}-${id}`}
 					size="sm"
-					variant={muted ? "bordered" : "flat"}
+					variant={muted ? "tertiary" : "soft"}
 					className="cursor-pointer"
 					onClick={() => onOpen(id)}
 				>

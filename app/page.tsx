@@ -15,6 +15,7 @@ import { DensityControl } from "@/ui/DensityControl";
 import { ExternalsToggle } from "@/ui/ExternalsToggle";
 import { useGraph, useViewerState } from "@/ui/useViewer";
 import { toggleOpen } from "@/lib/viewer-state";
+import { densityStyle } from "@/ui/Spacing";
 
 export default function Page() {
 	const graph = useGraph();
@@ -23,7 +24,7 @@ export default function Page() {
 	if (!graph) {
 		return (
 			<main className="flex h-screen items-center justify-center">
-				<Spinner label="lendo interfaces/" />
+				<Spinner />
 			</main>
 		);
 	}
@@ -38,7 +39,19 @@ export default function Page() {
 				/>
 			</section>
 
-			<aside className="flex w-[360px] flex-col gap-5 overflow-auto border-l border-default-200 bg-content1 p-6">
+			{/* THE ONE PLACE `--density` IS SET. Every gap in the panel is
+			    `calc(token * var(--density))`, so this single style is the whole
+			    setting — and `p-6` became a scaled padding for the same reason: a
+			    panel that breathes inside but keeps a fixed frame reads as cramped
+			    at the edges. */}
+			<aside
+				style={{
+					...densityStyle(state.density),
+					padding: "calc(24px * var(--density))",
+					gap: "calc(24px * var(--density))",
+				}}
+				className="flex w-[380px] flex-col overflow-auto border-l border-default-200 bg-content1"
+			>
 				{state.selected.includes("::") ? (
 					<InterfaceDetail
 						graph={graph}

@@ -21,16 +21,22 @@
 
 import type { Density } from "@/lib/viewer-state";
 
-/** Radix's ramp, in the only order that matters: how RELATED two things are. */
+/** Radix's ramp, in the only order that matters: how RELATED two things are.
+ *
+ *  THE MIDDLE OF THE RAMP MOVED UP one step each (20/08), after looking at the panel:
+ *  the ramp is right, but this panel is a column of short blocks — a heading, four
+ *  chips, a heading — and at the old values two unrelated blocks were 24px apart while
+ *  a heading sat 12px from its own content. Too close to read as separate, too far to
+ *  read as one. `tight` and `scene` did not move: those two were never the problem. */
 export const SPACE = {
 	/** Parts of one thing — an icon and its label. */
 	tight: 8,
 	/** Two things that answer the same question. */
-	related: 12,
+	related: 16,
 	/** The default gap inside a group. */
-	normal: 16,
+	normal: 24,
 	/** Between groups that share a heading. */
-	group: 24,
+	group: 32,
 	/** Between sections of a panel. */
 	section: 48,
 	/** Between the panel and the world. */
@@ -38,11 +44,16 @@ export const SPACE = {
 } as const;
 
 /** Density is ONE factor over the whole ramp — Radix's idea, and the reason it works:
- *  a second hand-written scale drifts from the first within a week. */
+ *  a second hand-written scale drifts from the first within a week.
+ *
+ *  THE ENDS WIDENED because they finally do something. While spacing was a prop nobody
+ *  passed, the three settings only ever moved the graph layout, so 0.875 and 1.15 were
+ *  the safe distance between three words in a picker. Now they move the panel too, and
+ *  a setting worth clicking has to be visibly different from the one beside it. */
 export const DENSITY: Record<Density, number> = {
-	compact: 0.875,
+	compact: 0.8,
 	balanced: 1,
-	comfortable: 1.15,
+	comfortable: 1.25,
 };
 
 /** Motion named by INTENT, so nobody writes `0.27s`. Durations follow Fluent 2's

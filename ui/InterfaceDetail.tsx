@@ -26,7 +26,7 @@ export function InterfaceDetail({
 
 	return (
 		<Stack gap="group">
-			<Button size="sm" variant="light" className="w-fit px-0" onClick={() => onBack(fileId)}>
+			<Button size="sm" variant="ghost" className="w-fit px-0" onClick={() => onBack(fileId)}>
 				← {file.label}
 			</Button>
 
@@ -41,7 +41,7 @@ export function InterfaceDetail({
 				{iface.methods.length ? (
 					<div className="flex flex-wrap gap-1">
 						{iface.methods.map(m => (
-							<Chip key={m} size="sm" variant="flat" className="font-mono">
+							<Chip key={m} size="sm" variant="soft" className="font-mono">
 								{m}
 							</Chip>
 						))}
@@ -60,7 +60,7 @@ export function InterfaceDetail({
 					{file.exports
 						.filter(e => e.name !== iface.name)
 						.map(e => (
-							<Chip key={e.name} size="sm" variant="bordered" className="font-mono">
+							<Chip key={e.name} size="sm" variant="tertiary" className="font-mono">
 								{e.name}
 							</Chip>
 						))}

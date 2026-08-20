@@ -15,7 +15,7 @@ export function OverviewPanel({ graph }: { graph: Graph }) {
 	return (
 		<Stack gap="group">
 			<div>
-				<Chip size="sm" variant="flat">lido dos arquivos, agora</Chip>
+				<Chip size="sm" variant="soft">lido dos arquivos, agora</Chip>
 				<h1 className="mt-3 text-xl font-semibold tracking-tight">src/*/interface.ts</h1>
 				<p className="mt-1 text-sm text-default-500">
 					{s.files} arquivos · {s.imports} imports · {s.values} por valor · {s.drafts} drafts
