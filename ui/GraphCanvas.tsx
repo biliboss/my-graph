@@ -263,7 +263,15 @@ export function GraphCanvas({
 				},
 				{ selector: ".dim", style: { opacity: 0.12 } },
 			],
-			layout: {
+			// SEM `layout:` AQUI DE PROPÓSITO — ele nasce logo abaixo, por `instance.layout()`,
+			// porque um layout criado dentro do construtor não devolve referência e não há
+			// como PARAR o ticker do cola na limpeza. `instance.stop()` para as animações e
+			// não a simulação, e era daí que vinha o `Cannot read properties of null
+			// (reading 'isHeadless')`: o cola continua tickando contra um core destruído.
+			layout: { name: "preset" },
+		});
+
+		const layout = instance.layout({
 				name: "cola",
 				animate: true,
 				refresh: 1,
@@ -280,8 +288,8 @@ export function GraphCanvas({
 				edgeLength: (e: cytoscape.EdgeSingular) => (e.data("kind") === "member" ? 78 : 118 * scale),
 				fit: true,
 				padding: 70,
-			} as cytoscape.LayoutOptions,
-		});
+		} as cytoscape.LayoutOptions);
+		layout.run();
 
 		// Route once the physics stops: bending against positions that are still moving
 		// would compute a detour around where a node USED to be.
@@ -300,9 +308,11 @@ export function GraphCanvas({
 		// part nobody can prove works.
 		(window as unknown as { __cy?: Core }).__cy = instance;
 		return () => {
-			// STOP BEFORE DESTROY, in this order: `destroy()` alone leaves cola's running
-			// simulation holding a core whose renderer is already null, and the next tick
-			// throws from inside the library where no guard of ours can reach.
+			// PARA O LAYOUT, DEPOIS AS ANIMAÇÕES, DEPOIS DESTRÓI — nesta ordem. `destroy()`
+			// sozinho deixa a simulação do cola segurando um core cujo renderer já é null, e
+			// o próximo tick estoura de dentro da biblioteca, onde guarda nenhuma nossa
+			// alcança. `instance.stop()` não basta: ele para animação, não simulação.
+			layout.stop();
 			instance.stop();
 			instance.destroy();
 			cy.current = null;

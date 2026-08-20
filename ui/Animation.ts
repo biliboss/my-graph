@@ -144,19 +144,28 @@ export function pulse(node: {
 	animate(o: unknown): unknown;
 	style(k: string): unknown;
 	length?: number;
+	/** O core dono deste nó, quando houver — usado só pra saber se ainda existe. */
+	cy?: () => { destroyed(): boolean };
 }) {
-	if (!node || reducedMotion()) return;
+	// O SEGUNDO TEMPO DESTE PULSO ACONTECE 180ms DEPOIS, e nesse intervalo cabe um hot
+	// reload inteiro. Sem esta guarda, o `complete` anima contra um core destruído e
+	// estoura de dentro da biblioteca (`Cannot read properties of null (reading
+	// 'isHeadless')`, 20/08).
+	const gone = () => node.cy?.()?.destroyed() ?? false;
+	if (!node || reducedMotion() || gone()) return;
 	const width = Number(node.style("width")) || 40;
 	node.animate({
 		style: { "border-width": 10, "border-color": "#a6e22e", "border-opacity": 0.35 },
 		duration: 180,
 		easing: "ease-out",
-		complete: () =>
+		complete: () => {
+			if (gone()) return;
 			node.animate({
 				style: { "border-width": 2, "border-color": "#1d1e19", "border-opacity": 1 },
 				duration: 420,
 				easing: "ease-in-out",
-			}),
+			});
+		},
 	});
 	return width;
 }
