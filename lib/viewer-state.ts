@@ -143,7 +143,10 @@ export function summary(g: Graph) {
 		nodes: g.nodes.length,
 		imports: g.edges.filter(e => e.kind === "import").length,
 		values: g.edges.filter(e => e.kind === "value").length,
-		drafts: g.nodes.filter(n => n.draft && !isExternal(n.id)).length,
+		// PROMESSA, não "draft": o cabeçalho dizia intenção, `implemented:` diz se
+		// existe arquivo. Um contrato pode ter perdido o rótulo de draft e continuar
+		// sem uma linha atrás — foi o caso de `tasks`, verde e roxo ao mesmo tempo.
+		drafts: g.nodes.filter(n => !isExternal(n.id) && n.implemented.length === 0).length,
 		cycles: g.cycles,
 	};
 }

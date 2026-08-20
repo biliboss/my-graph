@@ -18,7 +18,7 @@ export function OverviewPanel({ graph }: { graph: Graph }) {
 				<Chip size="sm" variant="soft">lido dos arquivos, agora</Chip>
 				<h1 className="mt-3 text-xl font-semibold tracking-tight">src/*/interface.ts</h1>
 				<p className="mt-1 text-sm text-default-500">
-					{s.files} arquivos · {s.imports} imports · {s.values} por valor · {s.drafts} drafts
+					{s.files} arquivos · {s.imports} imports · {s.values} por valor · {s.drafts} sem código
 				</p>
 			</div>
 
@@ -47,7 +47,7 @@ export function OverviewPanel({ graph }: { graph: Graph }) {
 				<h2 className="text-[11px] uppercase tracking-[0.16em] text-default-400">nós</h2>
 				<ul className="mt-2 space-y-1 text-sm text-default-500">
 					<li><Dot role="runs" /> documenta código que roda</li>
-					<li><Dot role="draft" /> draft — nada implementado</li>
+					<li><Dot role="draft" hollow /> vazado — contrato sem uma linha atrás</li>
 					<li><Dot role="tool" /> <code>tools</code> — adapta programa de fora</li>
 					<li><Dot role="line" /> fora de <code>src/</code></li>
 				</ul>
@@ -63,9 +63,13 @@ export function OverviewPanel({ graph }: { graph: Graph }) {
 /** THE LEGEND SPEAKS IN ROLES, like everything else: `runs`, not `#a6e22e`. It is the
  *  one widget that MUST match the canvas exactly — a legend showing a different green
  *  from the circle it explains is worse than no legend. */
-const Dot = ({ role }: { role: "runs" | "draft" | "tool" | "line" }) => (
+const Dot = ({ role, hollow }: { role: "runs" | "draft" | "tool" | "line"; hollow?: boolean }) => (
 	<span
-		style={{ background: `var(--${role})`, width: 12, height: 12, borderRadius: 999 }}
+		style={{
+			background: hollow ? "transparent" : `var(--${role})`,
+			border: hollow ? `2px solid var(--${role})` : undefined,
+			width: 12, height: 12, borderRadius: 999,
+		}}
 		className="inline-block align-middle"
 	/>
 );

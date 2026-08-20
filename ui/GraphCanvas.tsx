@@ -178,6 +178,10 @@ export function GraphCanvas({
 							data: {
 								...n,
 								ext: n.id.startsWith("ext:"),
+								// VAZADO = NADA ATRÁS. Contrato sem `implemented:` é promessa, e promessa
+								// desenhada igual a código que roda é a figura mentindo com a autoridade
+								// de um diagrama.
+								hollow: !n.id.startsWith("ext:") && n.implemented.length === 0,
 								label: lines.join("\n"),
 								size: Math.max(34 + Math.min(46, n.methods * 2.2), widest * 6.6 + 12),
 							},
@@ -205,6 +209,17 @@ export function GraphCanvas({
 						width: "data(size)", height: "data(size)",
 						"border-width": 2, "border-color": COLOURS.bg,
 						"transition-property": "opacity", "transition-duration": 180,
+					},
+				},
+				{
+					// O CÍRCULO VAZADO: só o contorno, e o rótulo na cor do papel em vez do
+					// fundo — sem preenchimento não há contraste pra tinta escura.
+					selector: "node[?hollow]",
+					style: {
+						"background-opacity": 0,
+						"border-width": 3,
+						"border-color": (n: NodeSingular) => (n.data("tool") ? COLOURS.tool : COLOURS.draft),
+						color: (n: NodeSingular) => (n.data("tool") ? COLOURS.tool : COLOURS.draft),
 					},
 				},
 				{

@@ -27,10 +27,12 @@ export function NodeDetail({
 	if (!node) return null;
 
 	const { imports, cites, importedBy } = neighbours(graph, id);
-	const kind = isExternal(node.id) ? "fora de interfaces/"
-		: node.tool ? "tools — adapta programa de fora"
-		: node.draft ? "draft — nada implementado"
-		: "documenta código que roda";
+	// O VAZIO É O QUE MERECE NOME. `draft` era o rótulo antigo e dizia intenção; o que
+	// o leitor precisa saber é se existe código, e `implemented:` é quem responde.
+	const kind = isExternal(node.id) ? "fora de src/"
+		: node.implemented.length === 0 ? "contrato sem uma linha atrás — promessa"
+		: node.tool ? `tools — adapta programa de fora · ${node.implemented.length} arquivos`
+		: `roda: ${node.implemented.join(" · ")}`;
 
 	return (
 		<Stack gap="group">
