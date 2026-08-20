@@ -1,0 +1,22 @@
+@import "tailwindcss";
+/* Direct path: the package exports `./styles` under a `style` condition that the
+   Tailwind PostCSS plugin does not resolve (measured 20/08). */
+@import "../node_modules/@heroui/react/dist/styles.css";
+
+/* Monokai, because the editor in the next window is Monokai: two greens for one idea
+   is a reader translating between windows. HeroUI reads these as its dark theme. */
+@theme {
+  --color-background: #1d1e19;
+  --color-foreground: #f8f8f2;
+  --color-content1: #26271f;
+  --color-primary: #a6e22e;
+  --color-primary-foreground: #1d1e19;
+  --color-secondary: #ae81ff;
+  --color-danger: #f92672;
+  --color-default-100: #2b2c24;
+  --color-default-200: #3b3d33;
+  --color-default-400: #75715e;
+  --color-default-500: #a6a48f;
+}
+
+html, body { height: 100%; background: #1d1e19; color: #f8f8f2; }
