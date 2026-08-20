@@ -75,7 +75,14 @@ export function extract(): Graph {
 			const methods: string[] = [];
 			for (let j = i; j < lines.length; j++) {
 				depth += (lines[j].match(/\{/g) ?? []).length - (lines[j].match(/\}/g) ?? []).length;
-				const decl = j > i && depth === 1 ? lines[j].match(/^\t([a-zA-Z]+)[(<]/) : null;
+				// ONE LEVEL DEEP TOO. `tools` groups its verbs by program —
+				// `askuser: { ask() }`, `gh: { prs() }` — and counting only the outer level
+				// reported ONE verb for an interface with thirty (20/08). A grouped surface
+				// is not a smaller surface.
+				const decl =
+					j > i && depth === 1 ? lines[j].match(/^\t([a-zA-Z]+)[(<]/)
+					: j > i && depth === 2 ? lines[j].match(/^\t\t([a-zA-Z]+)[(<]/)
+					: null;
 				if (decl) methods.push(decl[1]);
 				if (depth === 0 && j > i) break;
 			}
@@ -89,7 +96,7 @@ export function extract(): Graph {
 			planned: src.match(/^\/\/! planned:\s*(.+)$/m)?.[1].trim() ?? "",
 			config: [...src.matchAll(/^export const (\w+)/gm)].map(m => m[1]),
 			interfaces: (src.match(/^export interface /gm) ?? []).length,
-			methods: (src.match(/^\t[a-zA-Z]+[(<]/gm) ?? []).length,
+			methods: (src.match(/^\t{1,2}[a-zA-Z]+[(<]/gm) ?? []).length,
 			draft: !/THIS ONE IS NOT A DRAFT/.test(src),
 			tool: /^\/\/! external:/m.test(src),
 		});
