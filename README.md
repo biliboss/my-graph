@@ -1,6 +1,14 @@
 # my-graph
 
+**Your architecture diagram is lying. The truth is in the code.**
+
+[![Publish GitHub Pages](https://github.com/biliboss/my-graph/actions/workflows/pages.yml/badge.svg)](https://github.com/biliboss/my-graph/actions/workflows/pages.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-61ffca)](LICENSE)
+
+![my-graph reading the system it was born in](landing/public/shots/my-system.png)
+
 Draws what depends on what, read straight from the code.
+**[See the five proofs — messy code looks messy, good code looks organized →](https://biliboss.github.io/my-graph/)**
 
 Point it at a tree of systems, each one declaring its contract in
 `<system>/interface.ts`, and it renders the dependency graph — every verb of every
@@ -52,4 +60,11 @@ keeps pushing and the canvas fills with lassos.
 `#open=teams,agents&sel=kanban&d=compact` — back, forward and reload work for
 free, and a link points at one reading of the graph.
 
-MIT.
+## The family
+
+| repo | job |
+|---|---|
+| [my](https://github.com/biliboss/my) | the local-first personal operating system this was born inside |
+| **my-graph** | the X-ray: draws who depends on whom, read from the code |
+
+MIT — [LICENSE](LICENSE).
