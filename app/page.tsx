@@ -13,10 +13,13 @@ import { OverviewPanel } from "@/ui/OverviewPanel";
 import { DensityControl } from "@/ui/DensityControl";
 import { ExternalsToggle } from "@/ui/ExternalsToggle";
 import { useGraph, useViewerState } from "@/ui/useViewer";
-import { toggleOpen } from "@/lib/viewer-state";
+import { hubs, toggleOpen } from "@/lib/viewer-state";
 import { densityStyle } from "@/ui/Spacing";
 import { PanelSwap } from "@/ui/PanelSwap";
 import { Loading } from "@/ui/Loading";
+import { HubToggle } from "@/ui/HubToggle";
+import { ThemePicker } from "@/ui/ThemePicker";
+import { themeStyle } from "@/ui/Themes";
 
 export default function Page() {
 	const graph = useGraph();
@@ -24,14 +27,17 @@ export default function Page() {
 
 	if (!graph) {
 		return (
-			<main className="flex h-screen items-center justify-center">
+			<main className="flex h-screen items-center justify-center" style={themeStyle("monokai")}>
 				<Loading />
 			</main>
 		);
 	}
 
+	// THE THEME IS SET ON <main>, one level above both halves: the panel inherits the
+	// variables and the canvas is handed the same record by name. Setting it on the
+	// panel only would leave the graph in whatever palette it was compiled with.
 	return (
-		<main className="flex h-screen">
+		<main className="flex h-screen" style={themeStyle(state.theme)}>
 			<section className="min-w-0 flex-1">
 				<GraphCanvas
 					graph={graph}
@@ -85,6 +91,15 @@ export default function Page() {
 					<ExternalsToggle
 						value={state.externals}
 						onChange={on => update({ ...state, externals: on }, false)}
+					/>
+					<HubToggle
+						value={state.hideHub}
+						names={hubs(graph)}
+						onChange={on => update({ ...state, hideHub: on }, false)}
+					/>
+					<ThemePicker
+						value={state.theme}
+						onChange={t => update({ ...state, theme: t }, false)}
 					/>
 				</div>
 			</aside>

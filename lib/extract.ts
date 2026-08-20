@@ -22,6 +22,11 @@ export type GraphNode = {
 	tool: boolean;
 	/** Where the file lands when implemented, read from `//! planned:`. */
 	planned: string;
+	/** `export const` names: the facts the system runs on, written as DATA in the
+	 *  contract instead of as a paragraph above a method. Worth showing separately —
+	 *  a constant is the one part of an interface file that is already the
+	 *  configuration, not a description of one. */
+	config: string[];
 	exports: Iface[];
 };
 
@@ -82,6 +87,7 @@ export function extract(): Graph {
 			label: id,
 			exports,
 			planned: src.match(/^\/\/! planned:\s*(.+)$/m)?.[1].trim() ?? "",
+			config: [...src.matchAll(/^export const (\w+)/gm)].map(m => m[1]),
 			interfaces: (src.match(/^export interface /gm) ?? []).length,
 			methods: (src.match(/^\t[a-zA-Z]+[(<]/gm) ?? []).length,
 			draft: !/THIS ONE IS NOT A DRAFT/.test(src),
@@ -119,7 +125,7 @@ export function extract(): Graph {
 	for (const o of outside) {
 		nodes.push({
 			id: o, label: o.replace("ext:", ""), interfaces: 0, methods: 0,
-			draft: false, tool: false, planned: "", exports: [],
+			draft: false, tool: false, planned: "", exports: [], config: [],
 		});
 	}
 

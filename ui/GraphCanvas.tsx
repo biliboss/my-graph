@@ -18,8 +18,9 @@ import cytoscape, { type Core, type NodeSingular } from "cytoscape";
 // @ts-expect-error — no types published for this extension
 import cola from "cytoscape-cola";
 import type { Graph } from "@/lib/extract";
-import type { ViewerState } from "@/lib/viewer-state";
+import { hubs, type ViewerState } from "@/lib/viewer-state";
 import { pulse } from "./Animation";
+import { paletteOf } from "./Themes";
 
 let registered = false;
 
@@ -124,11 +125,6 @@ function routeEdges(cy: Core) {
 	});
 }
 
-const COLOURS = {
-	bg: "#1d1e19", line: "#3b3d33", txt: "#f8f8f2", dim: "#75715e",
-	lime: "#a6e22e", pink: "#f92672", cyan: "#66d9ef", violet: "#ae81ff",
-};
-
 const SPACING = { compact: 0.85, balanced: 1, comfortable: 1.2 };
 
 export function GraphCanvas({
@@ -153,6 +149,10 @@ export function GraphCanvas({
 		if (!registered) { cytoscape.use(cola); registered = true; }
 
 		const scale = SPACING[state.density];
+		// THE CANVAS CANNOT INHERIT A CSS VARIABLE — it is one <canvas>, not a tree of
+		// elements. So it reads the same record the panel's variables came from: one
+		// source, two consumers, and no picture that disagrees with the panel beside it.
+		const COLOURS = paletteOf(state.theme);
 		const instance = cytoscape({
 			container: box.current,
 			elements: (() => {
@@ -161,6 +161,9 @@ export function GraphCanvas({
 				// hidden thirteen pushed them — a sprawl with no reason on screen (20/08).
 				const nodes = graph.nodes.filter(n => state.externals || !n.id.startsWith("ext:"));
 				const has = (id: string) => nodes.some(n => n.id === id);
+				// The hub keeps its circle and loses its arrows: removing the node too would
+				// say `shared` does not exist, and it is the one thing everything rests on.
+				const hidden = state.hideHub ? new Set(hubs(graph)) : new Set<string>();
 				return [
 					// THE CIRCLE HOLDS ITS OWN NAME, so it can never be big enough only for the
 					// dot: a label outside floats between two circles and the reader guesses
@@ -181,7 +184,7 @@ export function GraphCanvas({
 						};
 					}),
 					...graph.edges
-						.filter(e => has(e.source) && has(e.target))
+						.filter(e => has(e.source) && has(e.target) && !hidden.has(e.target))
 						.map((e, i) => ({ data: { id: `e${i}`, ...e } })),
 				];
 			})(),
@@ -191,13 +194,13 @@ export function GraphCanvas({
 					style: {
 						"background-color": (n: NodeSingular) =>
 							n.data("id").startsWith("ext:") ? COLOURS.line
-							: n.data("tool") ? COLOURS.cyan
-							: n.data("draft") ? COLOURS.violet
-							: COLOURS.lime,
+							: n.data("tool") ? COLOURS.tool
+							: n.data("draft") ? COLOURS.draft
+							: COLOURS.runs,
 						label: "data(label)", "font-size": 12, "font-weight": 700,
 						// Dark ink on the bright fills, light on the grey externals — one
 						// colour for both would be unreadable on one of them.
-						color: (n: NodeSingular) => (n.data("id").startsWith("ext:") ? COLOURS.txt : COLOURS.bg),
+						color: (n: NodeSingular) => (n.data("id").startsWith("ext:") ? COLOURS.text : COLOURS.bg),
 						"text-valign": "center", "text-halign": "center", "text-wrap": "wrap",
 						width: "data(size)", height: "data(size)",
 						"border-width": 2, "border-color": COLOURS.bg,
@@ -208,13 +211,13 @@ export function GraphCanvas({
 					// The cited paths are context, not subject: smaller ink so the nine files
 					// stay the thing you read first.
 					selector: "node[?ext]",
-					style: { "font-size": 9, "font-weight": 500, color: "#a6a48f" },
+					style: { "font-size": 9, "font-weight": 500, color: COLOURS.dim },
 				},
 				{
 					selector: "node[?iface]",
 					style: {
-						"background-color": "#2b2c24", "border-color": COLOURS.line,
-						label: "data(label)", "font-size": 11, color: "#a6a48f",
+						"background-color": COLOURS.panel, "border-color": COLOURS.line,
+						label: "data(label)", "font-size": 11, color: COLOURS.dim,
 						"text-valign": "center", "text-halign": "center",
 						shape: "round-rectangle", width: "label", height: 22, padding: "8px",
 					},
@@ -229,9 +232,9 @@ export function GraphCanvas({
 						"control-point-distances": [26], "control-point-weights": [0.5],
 						"target-arrow-shape": "triangle", "arrow-scale": 0.9, opacity: 0.85,
 						"line-color": (e: cytoscape.EdgeSingular) =>
-							e.data("kind") === "import" ? COLOURS.cyan : COLOURS.dim,
+							e.data("kind") === "import" ? COLOURS.tool : COLOURS.dim,
 						"target-arrow-color": (e: cytoscape.EdgeSingular) =>
-							e.data("kind") === "import" ? COLOURS.cyan : COLOURS.dim,
+							e.data("kind") === "import" ? COLOURS.tool : COLOURS.dim,
 						"line-style": (e: cytoscape.EdgeSingular) =>
 							e.data("kind") === "import" ? "solid" : "dashed",
 					},
@@ -286,9 +289,9 @@ export function GraphCanvas({
 			instance.destroy();
 			cy.current = null;
 		};
-		// Density and externals rebuild the layout on purpose: both are layout inputs, not
-		// classes on something already placed.
-	}, [graph, state.density, state.externals]);
+		// Density, externals and theme rebuild on purpose: the first two are layout
+		// inputs, and the third is baked into a stylesheet cytoscape compiled once.
+	}, [graph, state.density, state.externals, state.theme, state.hideHub]);
 
 	// ── react to selection and open rings ───────────────────────────────────
 	useEffect(() => {

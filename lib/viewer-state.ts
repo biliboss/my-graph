@@ -23,11 +23,24 @@ export type ViewerState = {
 	/** External stubs (`ext:src/…`) are hidden by default: 22 circles for 9 files is
 	 *  a picture of the extractor, not of the architecture. */
 	externals: boolean;
+	/** Hide the arrows INTO a hub — a node half the graph imports. `shared` is one:
+	 *  twelve of its arrows are true and say nothing, because "everybody depends on the
+	 *  bottom layer" is the design, not news. Hidden, what is left is the shape that
+	 *  changes. */
+	hideHub: boolean;
+	/** A palette name from `ui/Themes.tsx`. In the URL like everything else, so a
+	 *  screenshot of the graph carries the theme it was read in. */
+	theme: string;
 };
 
 /** COMFORTABLE IS THE DEFAULT, chosen by looking: at this node count the extra 15%
  *  is what stops labels touching the circle below them. */
-const DEFAULTS: ViewerState = { open: [], selected: "", density: "comfortable", externals: false };
+const DEFAULTS: ViewerState = {
+	open: [], selected: "", density: "comfortable", externals: false, hideHub: false,
+	// MONOKAI IS THE DEFAULT because the editor in the next window is Monokai, and two
+	// greens for one idea is a reader translating between windows.
+	theme: "monokai",
+};
 
 export function parse(hash: string): ViewerState {
 	const p = new URLSearchParams(hash.replace(/^#/, ""));
@@ -37,6 +50,8 @@ export function parse(hash: string): ViewerState {
 		selected: p.get("sel") ?? "",
 		density: density && ["compact", "balanced", "comfortable"].includes(density) ? density : DEFAULTS.density,
 		externals: p.get("ext") === "1",
+		hideHub: p.get("hub") === "0",
+		theme: p.get("t") ?? DEFAULTS.theme,
 	};
 }
 
@@ -46,6 +61,8 @@ export function serialize(s: ViewerState): string {
 	if (s.selected) p.set("sel", s.selected);
 	if (s.density !== DEFAULTS.density) p.set("d", s.density);
 	if (s.externals) p.set("ext", "1");
+	if (s.hideHub) p.set("hub", "0");
+	if (s.theme !== DEFAULTS.theme) p.set("t", s.theme);
 	const q = p.toString();
 	return q ? `#${q}` : "#";
 }
@@ -101,6 +118,21 @@ export function depths(g: Graph): Map<string, number> {
 	};
 	g.nodes.forEach(n => walk(n.id));
 	return depth;
+}
+
+/** A NODE HALF THE GRAPH IMPORTS. Computed, never named: `shared` is what this
+ *  codebase calls it, and the next tree to be drawn will call it something else. The
+ *  threshold is half of everything that could import it — below that, the arrows still
+ *  carry information about who chose to depend on what.
+ *
+ *  Only `import` edges count. A `depends_on` comment is a claim, and a hub built out
+ *  of claims would hide real arrows on the strength of a sentence nobody verifies. */
+export function hubs(g: Graph): string[] {
+	const real = g.nodes.filter(n => !isExternal(n.id));
+	const threshold = Math.max(2, Math.ceil((real.length - 1) / 2));
+	return real
+		.filter(n => g.edges.filter(e => e.kind === "import" && e.target === n.id).length >= threshold)
+		.map(n => n.id);
 }
 
 /** The counts the overview shows. A widget summing edges by hand is a widget that

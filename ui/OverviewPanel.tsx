@@ -46,10 +46,10 @@ export function OverviewPanel({ graph }: { graph: Graph }) {
 			<div>
 				<h2 className="text-[11px] uppercase tracking-[0.16em] text-default-400">nós</h2>
 				<ul className="mt-2 space-y-1 text-sm text-default-500">
-					<li><Dot className="bg-[#a6e22e]" /> documenta código que roda</li>
-					<li><Dot className="bg-[#ae81ff]" /> draft — nada implementado</li>
-					<li><Dot className="bg-[#66d9ef]" /> <code>tools</code> — adapta programa de fora</li>
-					<li><Dot className="bg-[#3b3d33]" /> fora de <code>src/</code></li>
+					<li><Dot role="runs" /> documenta código que roda</li>
+					<li><Dot role="draft" /> draft — nada implementado</li>
+					<li><Dot role="tool" /> <code>tools</code> — adapta programa de fora</li>
+					<li><Dot role="line" /> fora de <code>src/</code></li>
 				</ul>
 			</div>
 
@@ -60,6 +60,12 @@ export function OverviewPanel({ graph }: { graph: Graph }) {
 	);
 }
 
-const Dot = ({ className }: { className: string }) => (
-	<span className={`inline-block h-3 w-3 rounded-full align-middle ${className}`} />
+/** THE LEGEND SPEAKS IN ROLES, like everything else: `runs`, not `#a6e22e`. It is the
+ *  one widget that MUST match the canvas exactly — a legend showing a different green
+ *  from the circle it explains is worse than no legend. */
+const Dot = ({ role }: { role: "runs" | "draft" | "tool" | "line" }) => (
+	<span
+		style={{ background: `var(--${role})`, width: 12, height: 12, borderRadius: 999 }}
+		className="inline-block align-middle"
+	/>
 );

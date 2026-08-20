@@ -27,8 +27,8 @@ export function Loading({ says = "lendo os contratos" }: { says?: string }) {
 	return (
 		<div ref={box} className="flex flex-col items-center gap-5">
 			<svg width="132" height="40" viewBox="0 0 132 40" aria-hidden>
-				<line x1="20" y1="20" x2="66" y2="20" stroke="#3b3d33" strokeWidth="2" />
-				<line x1="66" y1="20" x2="112" y2="20" stroke="#3b3d33" strokeWidth="2" />
+				<line x1="20" y1="20" x2="66" y2="20" stroke="var(--line)" strokeWidth="2" />
+				<line x1="66" y1="20" x2="112" y2="20" stroke="var(--line)" strokeWidth="2" />
 				{[20, 66, 112].map((x, i) => (
 					<circle
 						key={x}
@@ -36,7 +36,7 @@ export function Loading({ says = "lendo os contratos" }: { says?: string }) {
 						cx={x}
 						cy="20"
 						r="8"
-						fill={i === 1 ? "#a6e22e" : "#ae81ff"}
+						fill={i === 1 ? "var(--runs)" : "var(--draft)"}
 						style={{ transformOrigin: `${x}px 20px` }}
 					/>
 				))}

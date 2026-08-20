@@ -71,6 +71,21 @@ export function NodeDetail({
 
 			<hr className="border-default-200" />
 
+			{node.config.length > 0 && (
+				<Section title="config">
+					{/* CONSTANTES, não métodos: o que o sistema SABE, escrito como dado no
+					    próprio contrato. Um parágrafo acima de um método é um fato que nada
+					    consegue ler. */}
+					<div className="flex flex-wrap gap-1">
+						{node.config.map(c => (
+							<Chip key={c} size="sm" variant="soft" className="font-mono">
+								{c}
+							</Chip>
+						))}
+					</div>
+				</Section>
+			)}
+
 			<Section title="depende de">
 				<Links ids={imports} label="importa" onOpen={onOpen} />
 				<Links ids={cites} label="cita" onOpen={onOpen} muted />

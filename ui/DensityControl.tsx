@@ -53,8 +53,8 @@ export function DensityControl({
 						// three words again (measured 20/08).
 						style={{
 							transitionDuration: `${MOTION.micro}ms`,
-							background: on ? "#a6e22e" : "transparent",
-							color: on ? "#1d1e19" : undefined,
+							background: on ? "var(--runs)" : "transparent",
+							color: on ? "var(--bg)" : undefined,
 						}}
 						className={[
 							"flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
