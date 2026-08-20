@@ -159,7 +159,11 @@ export function GraphCanvas({
 				// EXTERNALS ARE A LAYOUT INPUT, not a `display: none`. Hiding them left cola
 				// solving for 22 circles and showing 9, so the visible nine sat wherever the
 				// hidden thirteen pushed them — a sprawl with no reason on screen (20/08).
-				const nodes = graph.nodes.filter(n => state.externals || !n.id.startsWith("ext:"));
+				const nodes = graph.nodes.filter(
+					n =>
+						(state.externals || !n.id.startsWith("ext:")) &&
+						(state.orphans || !n.orphan),
+				);
 				const has = (id: string) => nodes.some(n => n.id === id);
 				// The hub keeps its circle and loses its arrows: removing the node too would
 				// say `shared` does not exist, and it is the one thing everything rests on.
@@ -212,6 +216,25 @@ export function GraphCanvas({
 						width: "data(size)", height: "data(size)",
 						"border-width": 2, "border-color": COLOURS.bg,
 						"transition-property": "opacity", "transition-duration": 180,
+					},
+				},
+				{
+					// ÓRFÃO: retângulo, e da cor do erro. NÃO é círculo de propósito — ele não
+					// participa do grafo, não tem aresta, e desenhá-lo igual aos outros
+					// sugeriria que participa. A forma diferente É a mensagem: isto está do
+					// LADO da arquitetura, não dentro dela.
+					selector: "node[?orphan]",
+					style: {
+						shape: "round-rectangle",
+						"background-opacity": 0.12,
+						"background-color": COLOURS.danger,
+						"border-width": 2,
+						"border-color": COLOURS.danger,
+						color: COLOURS.danger,
+						"font-size": 10,
+						width: "label",
+						height: 26,
+						padding: "10px",
 					},
 				},
 				{
@@ -319,7 +342,7 @@ export function GraphCanvas({
 		};
 		// Density, externals and theme rebuild on purpose: the first two are layout
 		// inputs, and the third is baked into a stylesheet cytoscape compiled once.
-	}, [graph, state.density, state.externals, state.theme, state.hideHub]);
+	}, [graph, state.density, state.externals, state.theme, state.hideHub, state.orphans]);
 
 	// ── react to selection and open rings ───────────────────────────────────
 	useEffect(() => {
@@ -330,7 +353,10 @@ export function GraphCanvas({
 		c.edges("[kind = 'member']").remove();
 
 		for (const id of state.open) {
-			const node = c.$(`#${id}`);
+			// `getElementById`, NUNCA `$("#"+id)`: um id de órfão é `orphan:extension/webview`,
+			// e `:` e `/` são sintaxe de seletor — o `$` joga e derruba a página inteira
+			// (medido 20/08, clicando num órfão).
+			const node = c.getElementById(id);
 			if (!node.length) continue;
 			const ifaces = (node.data("exports") ?? []) as { name: string; methods: number }[];
 			if (!ifaces.length) continue;
@@ -353,7 +379,7 @@ export function GraphCanvas({
 
 		c.elements().removeClass("dim");
 		if (state.selected) {
-			const node = c.$(`#${state.selected}`);
+			const node = c.getElementById(state.selected);
 			if (node.length) {
 				c.elements().addClass("dim");
 				node.closedNeighborhood().union(c.$(`[parentFile = "${state.selected}"]`)).removeClass("dim");

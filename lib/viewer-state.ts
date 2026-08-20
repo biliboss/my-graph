@@ -28,6 +28,10 @@ export type ViewerState = {
 	 *  bottom layer" is the design, not news. Hidden, what is left is the shape that
 	 *  changes. */
 	hideHub: boolean;
+	/** Mostrar as pastas de código que contrato NENHUM reivindica. Fora por padrão:
+	 *  são 17 pastas nesta árvore, e elas não pertencem ao grafo de dependência — são a
+	 *  pergunta que fica DO LADO dele. */
+	orphans: boolean;
 	/** A palette name from `ui/Themes.tsx`. In the URL like everything else, so a
 	 *  screenshot of the graph carries the theme it was read in. */
 	theme: string;
@@ -36,7 +40,7 @@ export type ViewerState = {
 /** COMFORTABLE IS THE DEFAULT, chosen by looking: at this node count the extra 15%
  *  is what stops labels touching the circle below them. */
 const DEFAULTS: ViewerState = {
-	open: [], selected: "", density: "comfortable", externals: false, hideHub: false,
+	open: [], selected: "", density: "comfortable", externals: false, hideHub: false, orphans: false,
 	// MONOKAI IS THE DEFAULT because the editor in the next window is Monokai, and two
 	// greens for one idea is a reader translating between windows.
 	theme: "monokai",
@@ -51,6 +55,7 @@ export function parse(hash: string): ViewerState {
 		density: density && ["compact", "balanced", "comfortable"].includes(density) ? density : DEFAULTS.density,
 		externals: p.get("ext") === "1",
 		hideHub: p.get("hub") === "0",
+		orphans: p.get("orf") === "1",
 		theme: p.get("t") ?? DEFAULTS.theme,
 	};
 }
@@ -62,8 +67,14 @@ export function serialize(s: ViewerState): string {
 	if (s.density !== DEFAULTS.density) p.set("d", s.density);
 	if (s.externals) p.set("ext", "1");
 	if (s.hideHub) p.set("hub", "0");
+	if (s.orphans) p.set("orf", "1");
 	if (s.theme !== DEFAULTS.theme) p.set("t", s.theme);
-	const q = p.toString();
+	// `:` `/` `,` VOLTAM A SER ELES MESMOS. `URLSearchParams` percent-encoda os três,
+	// e no FRAGMENTO nenhum deles é reservado — `#sel=orphan%3Aextension%2Fwebview` é o
+	// mesmo endereço que `#sel=orphan:extension/webview`, só ilegível. E ilegível cobra:
+	// um link colado num commit não se lê, e o driver de teste desta casa casa alvo por
+	// URL exata, então a forma encodada quebrou cinco sessões seguidas (20/08).
+	const q = p.toString().replace(/%3A/g, ":").replace(/%2F/g, "/").replace(/%2C/g, ",");
 	return q ? `#${q}` : "#";
 }
 
@@ -146,7 +157,10 @@ export function summary(g: Graph) {
 		// PROMESSA, não "draft": o cabeçalho dizia intenção, `implemented:` diz se
 		// existe arquivo. Um contrato pode ter perdido o rótulo de draft e continuar
 		// sem uma linha atrás — foi o caso de `tasks`, verde e roxo ao mesmo tempo.
-		drafts: g.nodes.filter(n => !isExternal(n.id) && n.implemented.length === 0).length,
+		// ÓRFÃO NÃO É CONTRATO SEM CÓDIGO — é o contrário exato: código sem contrato.
+		// Contá-lo aqui somava as duas ausências opostas num número só (19, quando os
+		// contratos sem código eram 2).
+		drafts: g.nodes.filter(n => !isExternal(n.id) && !n.orphan && n.implemented.length === 0).length,
 		cycles: g.cycles,
 	};
 }

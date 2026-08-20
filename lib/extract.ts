@@ -18,6 +18,11 @@ export type GraphNode = {
 	methods: number;
 	/** Says so in its own header: a draft has nothing implemented behind it. */
 	draft: boolean;
+	/** ÓRFÃO: uma pasta de código que contrato NENHUM reivindica. `files` são os
+	 *  arquivos dela, porque a pergunta que este nó existe pra fazer — "por que isto
+	 *  existe?" — não se responde sem os nomes. */
+	orphan?: boolean;
+	files?: string[];
 	/** Files listed on `//! implemented:` — the code that exists behind the contract.
 	 *  EMPTY IS THE INTERESTING CASE: a contract with nothing behind it is a promise,
 	 *  and the picture has to say which circles are promises. */
@@ -54,6 +59,10 @@ export type Graph = {
  *  a picture of one codebase with a server attached.
  *
  *  One folder, one file per system, the system named by the file. */
+/** A ÁRVORE DE CÓDIGO que os contratos deveriam cobrir. Por padrão a pasta ACIMA dos
+ *  contratos, que é onde eles moram nesta casa (`src/interfaces/` dentro de `src/`). */
+const CODE = process.env.MY_GRAPH_CODE ?? "";
+
 const DIR = process.env.MY_GRAPH_ROOT ?? join(process.cwd(), "..", "me", "src", "interfaces");
 
 export function extract(): Graph {
@@ -139,6 +148,60 @@ export function extract(): Graph {
 		nodes.push({
 			id: o, label: o.replace("ext:", ""), interfaces: 0, methods: 0,
 			draft: false, tool: false, planned: "", exports: [], config: [], implemented: [],
+		});
+	}
+
+	// ─── OS ÓRFÃOS ──────────────────────────────────────────────────────────
+	// CÓDIGO QUE CONTRATO NENHUM RECLAMA. A pergunta que isto faz é a única que o grafo
+	// não sabia fazer: por que este arquivo existe? Um arquivo que nenhum contrato cita
+	// ou é trabalho que ninguém documentou, ou é trabalho que ninguém precisa — e as
+	// duas respostas são acionáveis.
+	//
+	// AGRUPADOS POR PASTA de propósito: 198 círculos soltos matam o layout e não
+	// respondem nada. A pasta é onde a pergunta tem dono.
+	const codeRoot = CODE || join(DIR, "..");
+	const claimed = new Set<string>();
+	for (const file of files) {
+		const src = readFileSync(join(DIR, file), "utf8");
+		for (const m of src.matchAll(/^\/\/! (?:implemented|planned|depends_on|absorbs|impacts):(.+)$/gm))
+			for (const raw of m[1].split("·")) {
+				const t = raw.trim().split(/\s/)[0].replace(/\/$/, "");
+				if (t.startsWith("src/")) claimed.add(t.slice(4));
+			}
+	}
+
+	const byDir = new Map<string, string[]>();
+	const walk = (rel: string) => {
+		let entries: { name: string; isDirectory(): boolean }[];
+		try { entries = readdirSync(join(codeRoot, rel), { withFileTypes: true }); } catch { return; }
+		for (const e of entries) {
+			const r = rel ? `${rel}/${e.name}` : e.name;
+			if (e.isDirectory()) {
+				// Pastas que não são código desta casa. `interfaces` sai porque é a fonte do
+				// próprio grafo — ela não pode ser órfã de si mesma.
+				if (["node_modules", ".next", "dist", "out", "interfaces", ".git"].includes(e.name)) continue;
+				walk(r);
+			} else if (e.name.endsWith(".ts") && !e.name.endsWith(".d.ts")) {
+				// Teste segue o arquivo que testa: um `.test.ts` órfão é o mesmo achado
+				// contado duas vezes.
+				if (e.name.endsWith(".test.ts")) continue;
+				// Reivindicado se ele, ou qualquer pasta acima dele, foi citado.
+				const parts = r.split("/");
+				const covered = parts.some((_, i) => claimed.has(parts.slice(0, i + 1).join("/")));
+				if (covered) continue;
+				const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : ".";
+				byDir.set(dir, [...(byDir.get(dir) ?? []), e.name]);
+			}
+		}
+	};
+	walk("");
+
+	for (const [dir, list] of byDir) {
+		nodes.push({
+			id: `orphan:${dir}`,
+			label: dir === "." ? "src/*" : `src/${dir}`,
+			interfaces: 0, methods: 0, draft: false, tool: false, planned: "",
+			exports: [], config: [], implemented: [], orphan: true, files: list.sort(),
 		});
 	}
 

@@ -29,6 +29,36 @@ export function NodeDetail({
 	const { imports, cites, importedBy } = neighbours(graph, id);
 	// O VAZIO É O QUE MERECE NOME. `draft` era o rótulo antigo e dizia intenção; o que
 	// o leitor precisa saber é se existe código, e `implemented:` é quem responde.
+	// ÓRFÃO TEM PAINEL PRÓPRIO: a lista de arquivos É a resposta. Um nó que diz
+	// "13 arquivos sem contrato" e não os nomeia deixa a pergunta sem endereço.
+	if (node.orphan) {
+		return (
+			<Stack gap="group">
+				<Button size="sm" variant="ghost" className="w-fit px-0" onClick={onBack}>
+					← visão geral
+				</Button>
+				<div>
+					<h1 className="font-mono text-xl font-semibold tracking-tight">{node.label}</h1>
+					<p className="mt-1 text-xs" style={{ color: "var(--danger)" }}>
+						{node.files?.length} arquivos que contrato nenhum reivindica
+					</p>
+				</div>
+				<Section title="por que existem?">
+					<ul className="space-y-1 text-sm text-default-500">
+						{node.files?.map(f => (
+							<li key={f}><code>{f}</code></li>
+						))}
+					</ul>
+				</Section>
+				<p className="text-xs text-default-400">
+					Ou é trabalho que ninguém documentou — e falta uma linha
+					<code className="mx-1">//! implemented:</code> num contrato — ou é trabalho
+					que ninguém precisa.
+				</p>
+			</Stack>
+		);
+	}
+
 	const kind = isExternal(node.id) ? "fora de src/"
 		: node.implemented.length === 0 ? "contrato sem uma linha atrás — promessa"
 		: node.tool ? `tools — adapta programa de fora · ${node.implemented.length} arquivos`

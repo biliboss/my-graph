@@ -5,3 +5,6 @@ node_modules/
 next-env.d.ts
 landing/dist/
 landing/*.tsbuildinfo
+
+# `tsc --build` deixa isto; é cache, não registro.
+tsconfig.tsbuildinfo

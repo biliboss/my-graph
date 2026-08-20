@@ -18,6 +18,7 @@ import { densityStyle } from "@/ui/Spacing";
 import { PanelSwap } from "@/ui/PanelSwap";
 import { Loading } from "@/ui/Loading";
 import { HubToggle } from "@/ui/HubToggle";
+import { OrphansToggle } from "@/ui/OrphansToggle";
 import { ThemePicker } from "@/ui/ThemePicker";
 import { themeStyle } from "@/ui/Themes";
 
@@ -96,6 +97,11 @@ export default function Page() {
 						value={state.hideHub}
 						names={hubs(graph)}
 						onChange={on => update({ ...state, hideHub: on }, false)}
+					/>
+					<OrphansToggle
+						value={state.orphans}
+						count={graph.nodes.reduce((n, x) => n + (x.files?.length ?? 0), 0)}
+						onChange={on => update({ ...state, orphans: on }, false)}
 					/>
 					<ThemePicker
 						value={state.theme}
