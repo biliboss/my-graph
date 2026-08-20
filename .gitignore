@@ -3,3 +3,5 @@ node_modules/
 .qa-drive/
 .DS_Store
 next-env.d.ts
+landing/dist/
+landing/*.tsbuildinfo
