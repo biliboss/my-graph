@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Card, CardContent } from "@heroui/react";
+import { FoldNav } from "./foldnav";
 
 type Theme = "aura" | "tokyo";
 
@@ -122,6 +123,7 @@ function App() {
     <main>
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
+      <FoldNav />
       <nav className="nav shell" aria-label="Navegação principal">
         <a className="brand" href="#top" aria-label="my-graph, início">
           <span className="brand-mark">g</span><span>my-graph</span>
@@ -142,7 +144,7 @@ function App() {
         </div>
       </nav>
 
-      <header className="hero shell" id="top">
+      <header className="hero shell" id="top" data-fold>
         <div className="eyebrow"><span className="pulse" /> lido do código · nenhuma seta à mão · família my</div>
         <h1>Seu diagrama de arquitetura<br /><em>está mentindo.</em></h1>
         <p className="hero-line">A verdade está no código.</p>
@@ -170,7 +172,7 @@ function App() {
         <div>DRAWN FROM THE CODE <b>✦</b> EVERY EDGE CITES ITS SOURCE <b>✦</b> A STALE PICTURE IS DETECTABLE <b>✦</b> CONSTRAINTS, NOT ENERGY <b>✦</b> MEASURE THE CURVE, NOT THE CHORD <b>✦</b> DRAWN FROM THE CODE <b>✦</b> EVERY EDGE CITES ITS SOURCE <b>✦</b> A STALE PICTURE IS DETECTABLE <b>✦</b> CONSTRAINTS, NOT ENERGY <b>✦</b> MEASURE THE CURVE, NOT THE CHORD <b>✦</b></div>
       </section>
 
-      <section className="shell section" id="prova">
+      <section className="shell section" id="prova" data-fold>
         <div className="section-kicker">01 / veja com seus olhos</div>
         <div className="split-heading">
           <h2>O grafo não tem<br />modo embelezar.</h2>
@@ -179,7 +181,7 @@ function App() {
         <Carousel />
       </section>
 
-      <section className="shell section problem">
+      <section className="shell section problem" data-fold>
         <div className="section-kicker">02 / o problema real</div>
         <div className="split-heading">
           <h2>O diagrama foi desenhado<br />numa terça-feira.</h2>
@@ -213,7 +215,7 @@ function App() {
         </div>
       </section>
 
-      <section className="layers-section" id="mecanismo">
+      <section className="layers-section" id="mecanismo" data-fold>
         <div className="shell section">
           <div className="section-kicker">03 / o mecanismo</div>
           <div className="split-heading">
@@ -230,7 +232,7 @@ function App() {
         </div>
       </section>
 
-      <section className="shell section evidence" id="evidencia">
+      <section className="shell section evidence" id="evidencia" data-fold>
         <div className="section-kicker">04 / evidência, sem fantasia</div>
         <div className="split-heading">
           <h2>Garantia tem<br />nome e sobrenome.</h2>
@@ -248,7 +250,7 @@ function App() {
         </div>
       </section>
 
-      <section className="shell section">
+      <section className="shell section" data-fold>
         <div className="section-kicker">05 / o desenho</div>
         <div className="split-heading">
           <h2>Constraints,<br />não energia.</h2>
@@ -286,21 +288,21 @@ function App() {
         </div>
       </section>
 
-      <section className="shell section principle">
+      <section className="shell section principle" data-fold>
         <div className="principle-mark">“</div>
         <blockquote>Meça a curva,<br /><em>não a corda.</em></blockquote>
         <p>A reta limpa o que o arco desenhado não limpa — e uma quadrática atinge só metade da distância do ponto de controle no ápice, então vencer uma penetração de d custa 2d. Três versões erradas ensinaram isso; as duas lições estão escritas onde mordem, em ui/GraphCanvas.tsx.</p>
       </section>
 
-      <section className="fit-section" id="familia">
+      <section className="fit-section" id="familia" data-fold>
         <div className="shell section fit-grid">
           <div>
             <div className="section-kicker">06 / da mesma família</div>
-            <h2>my é o sistema.<br />my-graph é a radiografia.<br />my-company é a teoria.</h2>
+            <h2>my é o sistema.<br />my-graph é a radiografia.<br />my-company é a teoria.<br />my-kanban é o quadro.</h2>
             <p className="lead">Mesma casa, mesma disciplina: texto puro como interface, cada saída é superfície de edição, o humano é o portão.</p>
             <a href="https://biliboss.github.io/my/" target="_blank" rel="noreferrer" className="family-link">Conhecer o my <Arrow /></a>
           </div>
-          <div className="fit-columns three">
+          <div className="fit-columns four">
             <div className="fit-column yes">
               <span>MY — O SISTEMA</span>
               <p>Sistema operacional pessoal local-first</p>
@@ -322,11 +324,17 @@ function App() {
               <p>Usa o mesmo grafo, vivo, pra desenhar a empresa</p>
               <p><a href="https://biliboss.github.io/my-company/" target="_blank" rel="noreferrer">biliboss.github.io/my-company</a></p>
             </div>
+            <div className="fit-column fam">
+              <span>MY-KANBAN — O QUADRO</span>
+              <p>O mesmo conjunto de cards, várias perguntas</p>
+              <p>Rótulo chave:valor vira coluna, sem mover card</p>
+              <p><a href="https://biliboss.github.io/my-kanban/" target="_blank" rel="noreferrer">biliboss.github.io/my-kanban</a></p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="shell final-cta">
+      <section className="shell final-cta" data-fold>
         <span className="section-kicker">A FIGURA CERTA É A LIDA</span>
         <h2>Pare de desenhar arquitetura.<br />Comece a lê-la.</h2>
         <p>Open source, MIT. Aponte para a sua árvore e veja o que ela realmente é — não o que o diagrama de terça-feira dizia.</p>

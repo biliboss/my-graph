@@ -280,3 +280,15 @@ a.source-row:hover { background: color-mix(in srgb, var(--primary) 5%, transpare
 @media (max-width: 580px) {
   .urlstate { padding: 24px; }
 }
+
+/* ── navegação por dobra: j desce, k sobe (padrão da família my) ───────────── */
+.fold-stop { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
+kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82em; padding: 2px 7px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; background: var(--bg-deep); color: var(--text); }
+.foldnav { position: fixed; right: 22px; bottom: 22px; z-index: 60; display: flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--bg-deep) 84%, transparent); backdrop-filter: blur(12px); color: var(--faint); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.foldnav span { color: var(--text); letter-spacing: .06em; }
+.foldnav i { color: var(--faint); font-style: normal; }
+.fit-columns.four { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 900px) {
+  .fit-columns.four { grid-template-columns: 1fr; }
+  .foldnav { right: 12px; bottom: 12px; }
+}

@@ -67,5 +67,6 @@ free, and a link points at one reading of the graph.
 | [my](https://github.com/biliboss/my) | the local-first personal operating system this was born inside |
 | **my-graph** | the X-ray: draws who depends on whom, read from the code |
 | [my-company](https://github.com/biliboss/my-company) | the theory: the three processes every company depends on |
+| [my-kanban](https://github.com/biliboss/my-kanban) | the board: one set of cards, every question |
 
 MIT — [LICENSE](LICENSE).
